@@ -1,5 +1,6 @@
 import os
 import sys
+import shutil
 import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
@@ -10,6 +11,7 @@ from openpyxl.utils import range_boundaries
 APP_TITLE = "Orçamento System"
 WINDOW_SIZE = "920x520"
 EXCEL_FILE = "interface.xlsx"
+RUNTIME_EXCEL_FILE = "interface_runtime.xlsx"
 LOGO_FILE = "logo.jpg"
 
 
@@ -115,6 +117,7 @@ class OrcamentoApp:
         self.root.resizable(False, False)
 
         self.excel_path = resource_path(EXCEL_FILE)
+        self.runtime_excel_path = resource_path(RUNTIME_EXCEL_FILE)
         self.logo_path = resource_path(LOGO_FILE)
 
         self.dropdown_cache = {}
@@ -255,7 +258,8 @@ class OrcamentoApp:
 
     def calculate(self):
         try:
-            wb = load_workbook(self.excel_path, data_only=False)
+            shutil.copyfile(self.excel_path, self.runtime_excel_path)
+            wb = load_workbook(self.runtime_excel_path, data_only=False)
         except FileNotFoundError:
             self._set_results(None, None, None, None)
             return
@@ -267,10 +271,10 @@ class OrcamentoApp:
         ws["B8"] = self.bandeira_var.get()
         ws["B9"] = self.parcelas_var.get()
         ws["B10"] = self.estado_var.get()
-        wb.save(self.excel_path)
+        wb.save(self.runtime_excel_path)
         wb.close()
 
-        wb_result = load_workbook(self.excel_path, data_only=True)
+        wb_result = load_workbook(self.runtime_excel_path, data_only=True)
         ws_result = wb_result.active
         frete = ws_result["B6"].value
         default_val = ws_result["B14"].value
